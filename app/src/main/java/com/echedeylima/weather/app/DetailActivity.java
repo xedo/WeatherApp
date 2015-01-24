@@ -2,32 +2,35 @@ package com.echedeylima.weather.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class DetailActivity extends ActionBarActivity {
+
+    public static final String DATE_KEY = "forecast_date";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
         if (savedInstanceState == null) {
+            // Create the detail fragment and add it to the activity
+            // using a fragment transaction.
+            String date = getIntent().getStringExtra(DATE_KEY);
+
+            Bundle arguments = new Bundle();
+            arguments.putString(DetailActivity.DATE_KEY, date);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(arguments);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new DetailFragment())
+                    .add(R.id.weather_detail_container, fragment)
                     .commit();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -47,51 +50,5 @@ public class DetailActivity extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class DetailFragment extends Fragment {
-
-        private static final String tag = DetailFragment.class.getSimpleName();
-        private static final String HASHTAG = " #WeatherApp";
-        private String mForecastString;
-
-        public DetailFragment () {
-            setHasOptionsMenu(true);
-        }
-
-        @Override
-        public void onCreateOptionsMenu (Menu menu, MenuInflater inflater) {
-            inflater.inflate(R.menu.detailfragment, menu);
-            MenuItem menuItem = menu.findItem(R.id.action_share);
-            ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-            if (shareActionProvider != null){
-                shareActionProvider.setShareIntent(createShareForecastIntent());
-            } else {
-                Log.d(tag, "Share action provider is null?");
-            }
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            Intent intent = getActivity().getIntent();
-            View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-            if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                mForecastString = intent.getStringExtra(Intent.EXTRA_TEXT);
-                ((TextView) rootView.findViewById(R.id.detail_text)).setText(mForecastString);
-            }
-            return rootView;
-        }
-
-        private Intent createShareForecastIntent(){
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, mForecastString + HASHTAG);
-            return shareIntent;
-        }
     }
 }
